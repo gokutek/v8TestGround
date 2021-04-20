@@ -54,28 +54,40 @@ static void GetGameInstance(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 int main(int argc, char* argv[]) 
 {
-    // Initialize V8.
+    // 初始化V8
     v8::V8::InitializeICUDefaultLocation(argv[0]);
     v8::V8::InitializeExternalStartupData(argv[0]);
     std::unique_ptr<v8::Platform> platform = v8::platform::NewDefaultPlatform();
     v8::V8::InitializePlatform(platform.get());
     v8::V8::Initialize();
 
-    // Create a new Isolate and make it the current one.
+    // 创建Isolate对象 and make it the current one.
     v8::Isolate::CreateParams create_params;
-    create_params.array_buffer_allocator =
-        v8::ArrayBuffer::Allocator::NewDefaultAllocator();
+    create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
     v8::Isolate* isolate = v8::Isolate::New(create_params);
     {
         v8::Isolate::Scope isolate_scope(isolate);
 
-        // Create a stack-allocated handle scope.
+        /**
+         * 在栈上创建HandleScope.
+         * 尽管后面的代码没有直接使用handle_scope变量，但它还是要必须创建的。
+         * 如果注掉这行代码，后面在创建Context时就会报错：
+         *  # Fatal error in v8::HandleScope::CreateHandle()
+         *  # Cannot create a handle without a HandleScope
+         */
         v8::HandleScope handle_scope(isolate);
 
-        // Create a new context.
+        /**
+         * 创建Context对象
+         * 关于Local的说明可以去看下注释。
+         * v8返回给我们的对象基本上都会用到它。
+         */
         v8::Local<v8::Context> context = v8::Context::New(isolate);
 
-        // Enter the context for compiling and running the hello world script.
+        /**
+         * Enter the context for compiling and running the hello world script.
+         * 尽管后面的代码没有直接使用handle_scope变量，但它还是要必须创建的，否则也会引发异常。
+         */
         v8::Context::Scope context_scope(context);
 
         {
@@ -90,16 +102,12 @@ int main(int argc, char* argv[])
 
             // Create a string containing the JavaScript source code.
             std::string data = load_file("test.js");
-            v8::Local<v8::String> source =
-                v8::String::NewFromUtf8(isolate, data.c_str(),
-                    v8::NewStringType::kNormal)
-                .ToLocalChecked();
+            v8::Local<v8::String> source = v8::String::NewFromUtf8(isolate, data.c_str(), v8::NewStringType::kNormal).ToLocalChecked();
 
-            // Compile the source code.
-            v8::Local<v8::Script> script =
-                v8::Script::Compile(context, source).ToLocalChecked();
+            // 编译
+            v8::Local<v8::Script> script = v8::Script::Compile(context, source).ToLocalChecked();
 
-            // Run the script to get the result.
+            // 执行
             v8::Local<v8::Value> result = script->Run(context).ToLocalChecked();
 
             // Convert the result to an UTF8 string and print it.
