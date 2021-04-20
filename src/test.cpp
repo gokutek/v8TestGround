@@ -5,11 +5,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fstream>
 
 #include "include/libplatform/libplatform.h"
 #include "include/v8.h"
 
-int main(int argc, char* argv[]) {
+static std::string load_file(const char* path)
+{
+    std::string result;
+
+    std::ifstream ifs(path);
+    if (ifs.is_open())
+    {
+        ifs.seekg(0, std::ios_base::end);
+        int64_t length = ifs.tellg();
+        ifs.seekg(0, std::ios_base::beg);
+        result.resize(length + 1);
+        ifs.read(&result[0], length);
+        ifs.close();
+    }
+
+    return result;
+}
+
+int main(int argc, char* argv[]) 
+{
     // Initialize V8.
     v8::V8::InitializeICUDefaultLocation(argv[0]);
     v8::V8::InitializeExternalStartupData(argv[0]);
@@ -36,8 +56,9 @@ int main(int argc, char* argv[]) {
 
         {
             // Create a string containing the JavaScript source code.
+            std::string data = load_file("test.js");
             v8::Local<v8::String> source =
-                v8::String::NewFromUtf8(isolate, "'Hello' + ', World!'",
+                v8::String::NewFromUtf8(isolate, data.c_str(),
                     v8::NewStringType::kNormal)
                 .ToLocalChecked();
 
