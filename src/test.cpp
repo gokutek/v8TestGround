@@ -28,6 +28,30 @@ static std::string load_file(const char* path)
     return result;
 }
 
+struct WorldContext
+{
+    std::string name;
+    int         ver;
+};
+
+static void GetGameInstance(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Isolate* isolate = info.GetIsolate();
+    v8::Isolate::Scope isolate_scope(isolate);
+    v8::HandleScope handle_scope(isolate);
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    v8::Context::Scope context_scope(context);
+
+    WorldContext* worldContext = reinterpret_cast<WorldContext*>((v8::Local<v8::External>::Cast(info.Data()))->Value());
+    
+    int32_t para1 = info[0]->Int32Value(context).ToChecked();
+    
+    v8::Local<v8::String> para2 = info[1]->ToString(context).ToLocalChecked();
+    const char* strPara2 = *v8::String::Utf8Value(isolate, para2);
+
+    info.GetReturnValue().Set(666);
+}
+
 int main(int argc, char* argv[]) 
 {
     // Initialize V8.
@@ -55,6 +79,15 @@ int main(int argc, char* argv[])
         v8::Context::Scope context_scope(context);
 
         {
+            //注册一个C接口给JS调用
+            WorldContext worldContext;
+            worldContext.name = "TOM";
+            worldContext.ver = 2021;
+            v8::Local<v8::Object> global = context->Global();
+            global->Set(context,
+                v8::String::NewFromUtf8(isolate, "GetGameInstance", v8::NewStringType::kNormal).ToLocalChecked(),
+                v8::FunctionTemplate::New(isolate, GetGameInstance, v8::External::New(isolate, &worldContext))->GetFunction(context).ToLocalChecked());
+
             // Create a string containing the JavaScript source code.
             std::string data = load_file("test.js");
             v8::Local<v8::String> source =
