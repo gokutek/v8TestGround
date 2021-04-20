@@ -40,3 +40,7 @@ use_sysroot=false
 use_gold=false
 v8_enable_i18n_support=false
 icu_use_data_file=false
+
+
+项目使用上面的v8_monolith.lib需设置：
+1. 使用MT
