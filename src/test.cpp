@@ -45,8 +45,13 @@ static void log(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8::Context::Scope context_scope(context);
 
     v8::Local<v8::String> str = info[0]->ToString(context).ToLocalChecked();
-    const char* strPara2 = *v8::String::Utf8Value(isolate, str);
-    std::cout << strPara2 << std::endl;
+
+    // 这种写法是错误的，会有野指针的情况
+    //const char* strPara2 = *v8::String::Utf8Value(isolate, str);
+    //std::cout << strPara2 << std::endl;
+
+    v8::String::Utf8Value strPara2(isolate, str);
+    std::cout << *strPara2 << std::endl;
 }
 
 // JS接口
