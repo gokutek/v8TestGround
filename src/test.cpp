@@ -80,10 +80,7 @@ static void GetGameInstance(const v8::FunctionCallbackInfo<v8::Value>& info)
 // ¹¤¾ßº¯Êý
 static void ParseNode(v8::Isolate* isolate, v8::Local<v8::Object> object, TiXmlNode* pNode)
 {
-    if (!pNode)
-    {
-        return;
-    }
+    if (!pNode) { return; }
 
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
     v8::HandleScope handle_scope(isolate);
@@ -144,9 +141,9 @@ static void LoadXml(const v8::FunctionCallbackInfo<v8::Value>& info)
     TiXmlDocument doc(*path);
     doc.LoadFile();
 
-    v8::Local<v8::Object> result = v8::Object::New(isolate);
-    ParseNode(isolate, result, doc.RootElement());
-    info.GetReturnValue().Set(result);
+    v8::Local<v8::Object> rootObject = v8::Object::New(isolate);
+    ParseNode(isolate, rootObject, doc.RootElement());
+    info.GetReturnValue().Set(rootObject);
 }
 
 int main(int argc, char* argv[]) 
