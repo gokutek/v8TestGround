@@ -1,6 +1,8 @@
-(function(){
+var global = global || (function() { return this; }());
+
+(function(global) {
     log("---hello---")
-}())
+}(global))
 
 function test_math()
 {
