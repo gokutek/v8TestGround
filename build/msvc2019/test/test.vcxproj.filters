@@ -7,7 +7,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\test.cpp">
+    <ClCompile Include="..\..\..\src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\third_party\tinyxml\tinystr.cpp">

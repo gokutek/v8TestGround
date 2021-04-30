@@ -145,7 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\test.cpp" />
+    <ClCompile Include="..\..\..\src\main.cpp" />
     <ClCompile Include="..\..\..\src\v8Helper.cpp" />
     <ClCompile Include="..\..\..\third_party\tinyxml\tinystr.cpp" />
     <ClCompile Include="..\..\..\third_party\tinyxml\tinyxml.cpp" />
