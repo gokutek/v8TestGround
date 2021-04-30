@@ -1,3 +1,7 @@
+(function(){
+    log("---hello---")
+}())
+
 function test_math()
 {
     log(Math.abs(-100))
