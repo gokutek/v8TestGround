@@ -10,6 +10,7 @@
 #include "include/libplatform/libplatform.h"
 #include "include/v8.h"
 #include "tinyxml.h"
+#include "v8Helper.h"
 
 // 读取文件，返回其中的字符串
 static std::string load_file(const char* path)
@@ -74,7 +75,7 @@ static void GetGameInstance(const v8::FunctionCallbackInfo<v8::Value>& info)
     char buffer[1024];
     sprintf_s(buffer, "%s:%d:%d,%s", worldContext->name.c_str(), worldContext->ver, num , *str);
 
-    info.GetReturnValue().Set(v8::String::NewFromUtf8(isolate, buffer, v8::NewStringType::kNormal).ToLocalChecked());
+    info.GetReturnValue().Set(InternalString(isolate, buffer));
 }
 
 // 工具函数
@@ -91,8 +92,8 @@ static void ParseNode(v8::Isolate* isolate, v8::Local<v8::Object> object, TiXmlN
     {
         for (TiXmlAttribute* pAttr = pElem->FirstAttribute(); pAttr; pAttr = pAttr->Next())
         {
-            v8::Local<v8::String> v8Key = v8::String::NewFromUtf8(isolate, pAttr->Name(), v8::NewStringType::kNormal).ToLocalChecked();
-            v8::Local<v8::String> v8Value = v8::String::NewFromUtf8(isolate, pAttr->Value(), v8::NewStringType::kNormal).ToLocalChecked();
+            v8::Local<v8::String> v8Key = InternalString(isolate, pAttr->Name());
+            v8::Local<v8::String> v8Value = InternalString(isolate, pAttr->Value());
             object->Set(context, v8Key, v8Value);
         }
     }
@@ -103,7 +104,7 @@ static void ParseNode(v8::Isolate* isolate, v8::Local<v8::Object> object, TiXmlN
         {
         case TiXmlNode::TINYXML_ELEMENT:
         {
-            v8::Local<v8::String> v8Key = v8::String::NewFromUtf8(object->GetIsolate(), pChild->Value(), v8::NewStringType::kNormal).ToLocalChecked();
+            v8::Local<v8::String> v8Key = InternalString(object->GetIsolate(), pChild->Value());
             if (object->Get(context, v8Key).ToLocalChecked()->IsUndefined())
             {
                 v8::Local<v8::Array> v8Array = v8::Array::New(context->GetIsolate());
@@ -185,24 +186,27 @@ int main(int argc, char* argv[])
         v8::Context::Scope context_scope(context);
 
         {
-            //注册一个C接口给JS调用
             WorldContext worldContext;
             worldContext.name = "TOM";
             worldContext.ver = 2021;
+
             v8::Local<v8::Object> global = context->Global();
+
             global->Set(context,
-                v8::String::NewFromUtf8(isolate, "GetGameInstance", v8::NewStringType::kNormal).ToLocalChecked(),
+                InternalString(isolate, "GetGameInstance"),
                 v8::FunctionTemplate::New(isolate, GetGameInstance, v8::External::New(isolate, &worldContext))->GetFunction(context).ToLocalChecked());
+
             global->Set(context,
-                v8::String::NewFromUtf8(isolate, "LoadXml", v8::NewStringType::kNormal).ToLocalChecked(),
+                InternalString(isolate, "LoadXml"),
                 v8::FunctionTemplate::New(isolate, LoadXml, v8::External::New(isolate, &worldContext))->GetFunction(context).ToLocalChecked());
+            
             global->Set(context,
-                v8::String::NewFromUtf8(isolate, "log", v8::NewStringType::kNormal).ToLocalChecked(),
+                InternalString(isolate, "log"),
                 v8::FunctionTemplate::New(isolate, log, v8::External::New(isolate, &worldContext))->GetFunction(context).ToLocalChecked());
 
             // Create a string containing the JavaScript source code.
             std::string data = load_file("test.js");
-            v8::Local<v8::String> source = v8::String::NewFromUtf8(isolate, data.c_str(), v8::NewStringType::kNormal).ToLocalChecked();
+            v8::Local<v8::String> source = InternalString(isolate, data.c_str());
 
             // 编译
             v8::Local<v8::Script> script = v8::Script::Compile(context, source).ToLocalChecked();
