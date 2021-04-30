@@ -46,7 +46,7 @@ static void log(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
     v8::Context::Scope context_scope(context);
 
-    v8::Local<v8::String> str = info[0]->ToString(context).ToLocalChecked();
+    v8::Local<v8::String> str = info[0]->ToString(context).ToLocalChecked(); //参数1
 
     // 这种写法是错误的，会有野指针的情况
     //const char* strPara2 = *v8::String::Utf8Value(isolate, str);
@@ -67,9 +67,9 @@ static void GetGameInstance(const v8::FunctionCallbackInfo<v8::Value>& info)
 
     WorldContext* worldContext = reinterpret_cast<WorldContext*>((v8::Local<v8::External>::Cast(info.Data()))->Value());
     
-    int32_t num = info[0]->Int32Value(context).ToChecked();
+    int32_t num = info[0]->Int32Value(context).ToChecked(); // 参数1
     
-    v8::Local<v8::String> v8Str = info[1]->ToString(context).ToLocalChecked();
+    v8::Local<v8::String> v8Str = info[1]->ToString(context).ToLocalChecked(); // 参数2
     v8::String::Utf8Value str(isolate, v8Str);
 
     char buffer[1024];
@@ -90,6 +90,7 @@ static void ParseNode(v8::Isolate* isolate, v8::Local<v8::Object> object, TiXmlN
     TiXmlElement* pElem = pNode->ToElement();
     if (pElem)
     {
+        // 遍历属性
         for (TiXmlAttribute* pAttr = pElem->FirstAttribute(); pAttr; pAttr = pAttr->Next())
         {
             v8::Local<v8::String> v8Key = InternalString(isolate, pAttr->Name());
@@ -104,6 +105,16 @@ static void ParseNode(v8::Isolate* isolate, v8::Local<v8::Object> object, TiXmlN
         {
         case TiXmlNode::TINYXML_ELEMENT:
         {
+            /**
+             * 子节点保存在数组中，例如：
+             * <some>
+             *  <a name="lily" />
+             *  <a name="lucy" />
+             *  <b class="student" />
+             *  <b class="teacher" />
+             * </some>
+             * 那么，some.a和some.b都是数组
+             */
             v8::Local<v8::String> v8Key = InternalString(object->GetIsolate(), pChild->Value());
             if (object->Get(context, v8Key).ToLocalChecked()->IsUndefined())
             {
@@ -136,7 +147,7 @@ static void LoadXml(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
     v8::Context::Scope context_scope(context);
 
-    v8::Local<v8::String> v8Path = info[0]->ToString(context).ToLocalChecked();
+    v8::Local<v8::String> v8Path = info[0]->ToString(context).ToLocalChecked(); // 参数1
     v8::String::Utf8Value path(isolate, v8Path);
 
     TiXmlDocument doc(*path);
