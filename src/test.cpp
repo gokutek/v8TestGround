@@ -11,6 +11,7 @@
 #include "include/v8.h"
 #include "tinyxml.h"
 
+// 读取文件，返回其中的字符串
 static std::string load_file(const char* path)
 {
     std::string result;
@@ -35,7 +36,7 @@ struct WorldContext
     int         ver;
 };
 
-// JS接口
+// JS接口：打印日志
 static void log(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
@@ -54,7 +55,7 @@ static void log(const v8::FunctionCallbackInfo<v8::Value>& info)
     std::cout << *strPara2 << std::endl;
 }
 
-// JS接口
+// JS接口：
 static void GetGameInstance(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
@@ -65,14 +66,18 @@ static void GetGameInstance(const v8::FunctionCallbackInfo<v8::Value>& info)
 
     WorldContext* worldContext = reinterpret_cast<WorldContext*>((v8::Local<v8::External>::Cast(info.Data()))->Value());
     
-    int32_t para1 = info[0]->Int32Value(context).ToChecked();
+    int32_t num = info[0]->Int32Value(context).ToChecked();
     
-    v8::Local<v8::String> para2 = info[1]->ToString(context).ToLocalChecked();
-    const char* strPara2 = *v8::String::Utf8Value(isolate, para2);
+    v8::Local<v8::String> v8Str = info[1]->ToString(context).ToLocalChecked();
+    v8::String::Utf8Value str(isolate, v8Str);
 
-    info.GetReturnValue().Set(666);
+    char buffer[1024];
+    sprintf_s(buffer, "%s:%d:%d,%s", worldContext->name.c_str(), worldContext->ver, num , *str);
+
+    info.GetReturnValue().Set(v8::String::NewFromUtf8(isolate, buffer, v8::NewStringType::kNormal).ToLocalChecked());
 }
 
+// 工具函数
 static void ParseNode(v8::Isolate* isolate, v8::Local<v8::Object> object, TiXmlNode* pNode)
 {
     if (!pNode)
@@ -124,7 +129,7 @@ static void ParseNode(v8::Isolate* isolate, v8::Local<v8::Object> object, TiXmlN
     }
 }
 
-// JS接口
+// JS接口：读取XML文件，返回JS对象
 static void LoadXml(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
@@ -133,10 +138,10 @@ static void LoadXml(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
     v8::Context::Scope context_scope(context);
 
-    v8::Local<v8::String> path = info[0]->ToString(context).ToLocalChecked();
-    const char* strPara2 = *v8::String::Utf8Value(isolate, path);
+    v8::Local<v8::String> v8Path = info[0]->ToString(context).ToLocalChecked();
+    v8::String::Utf8Value path(isolate, v8Path);
 
-    TiXmlDocument doc(strPara2);
+    TiXmlDocument doc(*path);
     doc.LoadFile();
 
     v8::Local<v8::Object> result = v8::Object::New(isolate);
