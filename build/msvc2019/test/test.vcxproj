@@ -131,7 +131,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\..\..\third_party\v8;..\..\..\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\third_party\v8;..\..\..\third_party\v8\include;..\..\..\third_party\tinyxml;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
     </ClCompile>
@@ -146,6 +146,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\test.cpp" />
+    <ClCompile Include="..\..\..\src\v8Helper.cpp" />
+    <ClCompile Include="..\..\..\third_party\tinyxml\tinystr.cpp" />
+    <ClCompile Include="..\..\..\third_party\tinyxml\tinyxml.cpp" />
+    <ClCompile Include="..\..\..\third_party\tinyxml\tinyxmlerror.cpp" />
+    <ClCompile Include="..\..\..\third_party\tinyxml\tinyxmlparser.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src\v8Helper.h" />
+    <ClInclude Include="..\..\..\third_party\tinyxml\tinystr.h" />
+    <ClInclude Include="..\..\..\third_party\tinyxml\tinyxml.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
